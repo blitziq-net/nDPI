@@ -313,3 +313,48 @@ int ndpi_get_geoip_country_continent_city(struct ndpi_detection_module_struct *n
 
   return (-2);
 }
+
+int ndpi_get_geoip_lat_lon(struct ndpi_detection_module_struct *ndpi_str, char *ip,
+                           double *latitude, double *longitude)
+{
+#ifdef HAVE_MAXMINDDB
+  int gai_error, mmdb_error;
+  MMDB_lookup_result_s result;
+  MMDB_entry_data_s entry_data;
+
+  if (ndpi_str->mmdb_city_loaded) {
+    result = MMDB_lookup_string((MMDB_s *)ndpi_str->mmdb_city, ip, &gai_error, &mmdb_error);
+
+    if ((gai_error != 0) || (mmdb_error != MMDB_SUCCESS) || (!result.found_entry)) {
+      if (latitude) *latitude = 0.0;
+      if (longitude) *longitude = 0.0;
+      return -1;
+    }
+
+    if (latitude) {
+      int status = MMDB_get_value(&result.entry, &entry_data, "location", "latitude", NULL);
+      if ((status != MMDB_SUCCESS) || (!entry_data.has_data) || (entry_data.type != MMDB_DATA_TYPE_DOUBLE))
+        *latitude = 0.0;
+      else
+        *latitude = entry_data.double_value;
+    }
+
+    if (longitude) {
+      int status = MMDB_get_value(&result.entry, &entry_data, "location", "longitude", NULL);
+      if ((status != MMDB_SUCCESS) || (!entry_data.has_data) || (entry_data.type != MMDB_DATA_TYPE_DOUBLE))
+        *longitude = 0.0;
+      else
+        *longitude = entry_data.double_value;
+    }
+
+    return 0;
+  }
+#else
+  (void)ndpi_str;
+  (void)ip;
+  (void)latitude;
+  (void)longitude;
+#endif
+
+  return -2;
+}

@@ -2117,6 +2117,9 @@ extern "C" {
 					    char *country_code, u_int8_t country_code_len,
 					    char *continent, u_int8_t continent_len,
 					    char *city, u_int8_t city_len);
+  int ndpi_get_geoip_lat_lon(struct ndpi_detection_module_struct *ndpi_str, char *ip,
+                           double *latitude, double *longitude);
+
 
   /* ******************************* */
 
